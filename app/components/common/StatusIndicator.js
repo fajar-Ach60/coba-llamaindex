@@ -1,4 +1,3 @@
-// components/common/StatusIndicator.js
 import { useState, useEffect } from 'react';
 import { Wifi, WifiOff, Database, FileText, Loader2 } from 'lucide-react';
 
@@ -8,8 +7,18 @@ export default function StatusIndicator({
   indexStatus = 'Not initialized' 
 }) {
   const [systemStatus, setSystemStatus] = useState('online');
+  const [isClient, setIsClient] = useState(false);
+  const [currentTime, setCurrentTime] = useState('');
 
   useEffect(() => {
+    setIsClient(true);
+    setCurrentTime(new Date().toLocaleTimeString());
+    
+    // Update time every minute
+    const timeInterval = setInterval(() => {
+      setCurrentTime(new Date().toLocaleTimeString());
+    }, 60000);
+
     // Check system connectivity
     const checkStatus = () => {
       setSystemStatus(navigator.onLine ? 'online' : 'offline');
@@ -20,6 +29,7 @@ export default function StatusIndicator({
     checkStatus();
 
     return () => {
+      clearInterval(timeInterval);
       window.removeEventListener('online', checkStatus);
       window.removeEventListener('offline', checkStatus);
     };
@@ -44,6 +54,7 @@ export default function StatusIndicator({
   };
 
   const getMainStatus = () => {
+    if (!isClient) return 'Loading...';
     if (systemStatus === 'offline') return 'System Offline';
     if (databaseStatus === 'connected' && documentsCount > 0) return 'Ready';
     if (databaseStatus === 'connected') return 'Database Connected';
@@ -52,6 +63,7 @@ export default function StatusIndicator({
   };
 
   const getMainStatusColor = () => {
+    if (!isClient) return 'bg-gray-400';
     if (systemStatus === 'offline') return 'bg-red-400';
     if (databaseStatus === 'connected' && documentsCount > 0) return 'bg-green-400';
     if (databaseStatus === 'connected' || documentsCount > 0) return 'bg-yellow-400';
@@ -86,7 +98,7 @@ export default function StatusIndicator({
             {/* Network Status */}
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-2">
-                {systemStatus === 'online' ? (
+                {isClient && systemStatus === 'online' ? (
                   <Wifi className="w-4 h-4 text-green-400" />
                 ) : (
                   <WifiOff className="w-4 h-4 text-red-400" />
@@ -174,7 +186,7 @@ export default function StatusIndicator({
           {/* Last Updated */}
           <div className="mt-3 pt-2 border-t border-purple-500/20">
             <p className="text-purple-400 text-xs">
-              Last updated: {new Date().toLocaleTimeString()}
+              Last updated: {isClient ? currentTime : 'Loading...'}
             </p>
           </div>
         </div>

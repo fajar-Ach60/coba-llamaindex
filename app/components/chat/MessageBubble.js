@@ -1,6 +1,13 @@
 import { Loader2 } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 export default function MessageBubble({ message }) {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
   if (message.type === 'loading') {
     return (
       <div className="flex justify-start">
@@ -24,7 +31,10 @@ export default function MessageBubble({ message }) {
         }`}
       >
         <p className="text-sm">{message.content}</p>
-        <p className="text-xs opacity-70 mt-1">{message.timestamp}</p>
+        {/* Only show timestamp on client side to avoid hydration mismatch */}
+        {isClient && message.timestamp && (
+          <p className="text-xs opacity-70 mt-1">{message.timestamp}</p>
+        )}
       </div>
     </div>
   );
